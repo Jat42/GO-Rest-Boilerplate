@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -23,7 +24,7 @@ func GetDatabaseManager() *DatabaseManager {
 }
 
 func NewManager() *DatabaseManager {
-	databaseManager = &DatabaseManager{}
+	databaseManager = &DatabaseManager{databases: make(map[string]*mongo.Database)}
 	return databaseManager
 }
 
@@ -34,6 +35,7 @@ func (db *DatabaseManager) Connect() error {
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
+		log.Println("err: ", err)
 		return err
 	}
 
@@ -42,19 +44,20 @@ func (db *DatabaseManager) Connect() error {
 	return nil
 }
 
-func (db *DatabaseManager) GetDataBase(name string) *mongo.Database {
+func (db *DatabaseManager) GetDataBase(databaseName string) *mongo.Database {
 	db.mutex.RLock()
-	database := db.databases[name]
+	database := db.databases[databaseName]
 	db.mutex.RUnlock()
 	if database == nil {
-		database = db.client.Database(name)
+		database = db.client.Database(databaseName)
 		db.mutex.Lock()
-		db.databases[name] = database
+		db.databases[databaseName] = database
 		db.mutex.Unlock()
 	}
 	return database
 }
 
-func (db *DatabaseManager) GetCollection(name string) *mongo.Collection {
-	return nil
+func (db *DatabaseManager) GetCollection(databaseName string, collectionName string) *mongo.Collection {
+	currentDatabase := db.GetDataBase(databaseName)
+	return currentDatabase.Collection(collectionName)
 }
