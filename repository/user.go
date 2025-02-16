@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 	"users-rest/model"
+	"users-rest/util"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,7 +22,7 @@ func NewUserRepository(collection *mongo.Collection) *UserRepository {
 func (r *UserRepository) Insert(user model.User) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	user.ID = util.NewUUID()
 	_, err := r.collection.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err

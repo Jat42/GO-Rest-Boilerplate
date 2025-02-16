@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"time"
+	"users-rest/middleware"
 	"users-rest/model"
 	"users-rest/service"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,13 +25,18 @@ func (h *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
+	if user.Role == "" {
+		user.Role = "user"
+	}
+
 	createdUser, err := h.service.CreateUser(user)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to create user"})
 		return
 	}
 
-	c.JSON(201, createdUser)
+	token, _ := h.GenerateToken(user.Name, user.Role)
+	c.JSON(201, gin.H{"user": createdUser, "token": token})
 }
 
 func (h *UserController) GetUsers(c *gin.Context) {
@@ -39,4 +47,17 @@ func (h *UserController) GetUsers(c *gin.Context) {
 	}
 
 	c.JSON(200, users)
+}
+
+func (h *UserController) GenerateToken(username, role string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
+	claims := &model.Claims{
+		Username: username,
+		Role:     role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(middleware.JwtKey)
 }

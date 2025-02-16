@@ -10,6 +10,7 @@ import (
 	"time"
 	"users-rest/controller"
 	"users-rest/db"
+	"users-rest/middleware"
 	"users-rest/repository"
 	"users-rest/service"
 
@@ -20,7 +21,7 @@ import (
 func SetupRouter(controller *controller.UserController) *gin.Engine {
 	r := gin.Default()
 	r.POST("/users", controller.CreateUser)
-	r.GET("/users", controller.GetUsers)
+	r.GET("/users", middleware.JWTMiddleware(), middleware.AdminMiddleware(), controller.GetUsers)
 	return r
 }
 
