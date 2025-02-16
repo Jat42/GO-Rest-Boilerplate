@@ -17,22 +17,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// import (
-// 	"context"
-// 	"log"
-// 	"net/http"
-// 	"os"
-// 	"os/signal"
-// 	"syscall"
-// 	"time"
-
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/joho/godotenv"
-// 	"go.mongodb.org/mongo-driver/bson"
-// 	"go.mongodb.org/mongo-driver/mongo"
-// 	"go.mongodb.org/mongo-driver/mongo/options"
-// )
-
 func SetupRouter(controller *controller.UserController) *gin.Engine {
 	r := gin.Default()
 	r.POST("/users", controller.CreateUser)

@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserRepository struct {
@@ -45,4 +46,12 @@ func (r *UserRepository) GetAll() ([]model.User, error) {
 	}
 
 	return users, nil
+}
+
+func (r *UserRepository) CreateIndexes() {
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "email", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+	r.collection.Indexes().CreateOne(context.Background(), indexModel)
 }
